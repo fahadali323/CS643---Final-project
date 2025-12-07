@@ -1,0 +1,1 @@
+spark-submit train.py TrainingDataset.csv ValidationDataset.csv wine_quality_model_final
