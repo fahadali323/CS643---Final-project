@@ -1,22 +1,22 @@
 FROM python:3.10-slim
 
-# Install Java 11 for PySpark compatibility
+# Install Java (OpenJDK 17 works with PySpark 3.4.x)
 RUN apt-get update && \
-    apt-get install -y openjdk-11-jre && \
-    apt-get clean
+    apt-get install -y openjdk-17-jre-headless && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Install PySpark
-RUN pip install pyspark==3.4.1
+# Install dependencies
+RUN pip install --no-cache-dir pyspark==3.4.1
 
-# Set working directory
+# Set workdir
 WORKDIR /app
 
-# Copy inference script
+# Copy prediction script
 COPY predict2.py /app/predict2.py
 
-# Optional: include model inside image (helps TAs run without mounting)
+# (Optional) Copy model directory IF it exists locally in your repo
+# Remove this line if your repo does NOT contain the folder!
 COPY wine_quality_model_final /app/wine_quality_model_final
 
-# Allow script arguments:
-# Usage inside container: predict2.py <model_path> <csv_path>
-ENTRYPOINT ["python", "/app/predict2.py"]
+# Allow script arguments from `docker run`
+ENTRYPOINT ["python", "predict2.py"]
