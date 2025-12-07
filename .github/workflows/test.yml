@@ -1,0 +1,41 @@
+name: Build and Deploy to Docker Hub
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout repository
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Log in to Docker Hub
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      # Build Docker image
+      - name: Build Docker image
+        run: |
+          IMAGE_NAME="${{ secrets.DOCKERHUB_USERNAME }}/wine-quality-predict"
+          docker build -t $IMAGE_NAME:latest .
+
+      # Tag with commit SHA
+      - name: Tag image with commit SHA
+        run: |
+          IMAGE_NAME="${{ secrets.DOCKERHUB_USERNAME }}/wine-quality-predict"
+          docker tag $IMAGE_NAME:latest $IMAGE_NAME:${{ github.sha }}
+
+      # Push images
+      - name: Push Docker images
+        run: |
+          IMAGE_NAME="${{ secrets.DOCKERHUB_USERNAME }}/wine-quality-predict"
+          docker push $IMAGE_NAME:latest
+          docker push $IMAGE_NAME:${{ github.sha }}
